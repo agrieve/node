@@ -25,14 +25,19 @@ import sys
 import node_common
 
 GN_ARGS = [
-  "v8_monolithic = true",
-  "is_component_build = false",
-  "v8_use_external_startup_data = false",
-  "use_custom_libcxx = false",
-  "use_sysroot = false",
+  "v8_monolithic=true",
+  "is_component_build=false",
+  "v8_use_external_startup_data=false",
+  "use_custom_libcxx=false",
 ]
 
 BUILD_TARGET = "v8_monolith"
+
+def FindTargetOs(flags):
+  for flag in flags:
+    if flag.startswith("target_os="):
+      return flag[len("target_os="):].strip('"')
+  raise Exception('No target_os was set.')
 
 def FindGn(options):
   if options.host_os == "linux":
@@ -46,33 +51,41 @@ def FindGn(options):
   return os.path.join(options.v8_path, "buildtools", os_path, "gn")
 
 def GenerateBuildFiles(options):
-  print "Setting GN args."
   gn = FindGn(options)
-  gn_args = []
-  gn_args.extend(GN_ARGS)
+  gn_args = list(GN_ARGS)
+  target_os = FindTargetOs(options.flag)
+  if target_os != "win":
+    gn_args.append("use_sysroot=false")
+
   for flag in options.flag:
     flag = flag.replace("=1", "=true")
     flag = flag.replace("=0", "=false")
     flag = flag.replace("target_cpu=ia32", "target_cpu=\"x86\"")
     gn_args.append(flag)
   if options.mode == "DEBUG":
-    gn_args.append("is_debug = true")
+    gn_args.append("is_debug=true")
   else:
-    gn_args.append("is_debug = false")
+    gn_args.append("is_debug=false")
 
-  if not os.path.isdir(options.build_path):
-    os.makedirs(options.build_path)
-  with open(os.path.join(options.build_path, "args.gn"), "w") as args_file:
-    args_file.write("\n".join(gn_args))
-  subprocess.check_call([gn, "gen", "-C", options.build_path],
-                        cwd=options.v8_path)
+  if os.environ.get("V8_USE_GOMA") == "1":
+    gn_args.append("use_goma=true")
+
+  args = [gn, "gen", options.build_path, "--args=" + ' '.join(gn_args)]
+  print "Running GN via:", args
+  subprocess.check_call(args, cwd=options.v8_path)
 
 def Build(options):
-  print "Building."
   depot_tools = node_common.EnsureDepotTools(options.v8_path, False)
   ninja = os.path.join(depot_tools, "ninja")
-  subprocess.check_call([ninja, "-v", "-C", options.build_path, BUILD_TARGET],
-                        cwd=options.v8_path)
+  if options.host_os == 'win':
+    # Required because there is an extension-less file called "ninja".
+    ninja += '.exe'
+  args = [ninja, "-v", "-C", options.build_path, BUILD_TARGET]
+  if os.environ.get("V8_USE_GOMA") == "1":
+    args += ["-j500"]
+
+  print "Building via:", args
+  subprocess.check_call(args, cwd=options.v8_path)
 
 def ParseOptions(args):
   parser = argparse.ArgumentParser(

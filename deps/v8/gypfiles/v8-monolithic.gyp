@@ -28,14 +28,20 @@
         {
           'action_name': 'build_with_gn',
           'inputs': [
-            '../tools//node/build_gn.py',
+            '../tools/node/build_gn.py',
           ],
+          # Specify a non-existent output to make the target always dirty.
+          # Alternatively, a depfile could be used, but then the dirty check
+          # would just be run twice (once by outer build tool, and again by
+          # the sub-ninja invocation).
           'outputs': [
             '<(INTERMEDIATE_DIR)/gn/obj/libv8_monolith.a',
             '<(INTERMEDIATE_DIR)/gn/args.gn',
+            'does-not-exist',
           ],
           'action': [
-            '../tools//node/build_gn.py',
+            'python',
+            '../tools/node/build_gn.py',
             '--mode', '<(CONFIGURATION_NAME)',
             '--v8_path', '../',
             '--build_path', '<(INTERMEDIATE_DIR)/gn',
@@ -50,6 +56,7 @@
             '--flag', 'v8_enable_disassembler=<(v8_enable_disassembler)',
             '--flag', 'v8_postmortem_support=<(v8_postmortem_support)',
           ],
+          'ninja_use_console': 1,
         },
       ],
     },

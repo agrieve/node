@@ -1916,9 +1916,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
     if key == 'AR.host':
       ar_host = os.path.join(build_to_root, value)
     if key == 'CC':
+      print 'CC:::', value
       cc = os.path.join(build_to_root, value)
       if cc.endswith('clang-cl'):
         clang_cl = cc
+        print 'CLANG CL'
     if key == 'CXX':
       cxx = os.path.join(build_to_root, value)
     if key == 'CC.host':

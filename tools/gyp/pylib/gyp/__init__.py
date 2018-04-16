@@ -376,6 +376,9 @@ def gyp_main(args):
   if home_dot_gyp and not os.path.exists(home_dot_gyp):
     home_dot_gyp = None
 
+  print options.formats
+  print '*' * 80
+  
   if not options.formats:
     # If no format was given on the command line, then check the env variable.
     generate_formats = []

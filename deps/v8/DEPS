@@ -12,7 +12,7 @@ vars = {
 
 deps = {
   'v8/build':
-    Var('chromium_url') + '/chromium/src/build.git' + '@' + '6ae4520a1aa12032abf50fd3438a94417151dfe6',
+    Var('chromium_url') + '/chromium/src/build.git' + '@' + '056592110ee90c53b5f6a3acf414a84d81bc1cd5',
   'v8/tools/gyp':
     Var('chromium_url') + '/external/gyp.git' + '@' + 'd61a9397e668fa9843c4aa7da9e79460fe590bfb',
   'v8/third_party/icu':
@@ -56,7 +56,7 @@ deps = {
   'v8/test/test262/harness':
     Var('chromium_url') + '/external/github.com/test262-utils/test262-harness-py.git' + '@' + '0f2acdd882c84cff43b9d60df7574a1901e2cdcd',
   'v8/tools/clang':
-    Var('chromium_url') + '/chromium/src/tools/clang.git' + '@' + 'd7c36b0ae001a5cc31f2da79a430154916a3def2',
+    Var('chromium_url') + '/chromium/src/tools/clang.git' + '@' + '9e71dacad5e372a121f692bfd9f3b12fb186779d',
   'v8/tools/luci-go':
     Var('chromium_url') + '/chromium/src/tools/luci-go.git' + '@' + 'ff0709d4283b1f233dcf0c9fec1672c6ecaed2f1',
   'v8/test/wasm-js':
@@ -306,13 +306,6 @@ hooks = [
                 '--bucket', 'chromium-instrumented-libraries',
                 '-s', 'v8/third_party/instrumented_libraries/binaries/msan-no-origins-trusty.tgz.sha1',
               ],
-  },
-  {
-    # Update the Windows toolchain if necessary.
-    'name': 'win_toolchain',
-    'pattern': '.',
-    'condition': 'checkout_win',
-    'action': ['python', 'v8/build/vs_toolchain.py', 'update'],
   },
   # Pull binutils for linux, enabled debug fission for faster linking /
   # debugging when used with clang on Ubuntu Precise.
